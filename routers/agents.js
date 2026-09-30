@@ -14,7 +14,7 @@ router.post('/agents', (req, res) => {
             res.status(200).send(agent) 
                 console.log(agent)
             })
-        .catch((error) => { res.status(400).send(error) })
+        .catch((error) => { res.status(400).send(error.message) })
 })
 //------------------------------------------------------
 
@@ -26,7 +26,7 @@ router.get('/agents', (req, res) => {
             res.status(200).send(agents) 
                 console.log(agents)
         })
-        .catch((error) => { res.status(400).send(error) })
+        .catch((error) => { res.status(400).send(error.message) })
 })
 //------------------------------------------------------
 
@@ -45,7 +45,7 @@ router.get('/agents/:id', (req, res) => {
                     console.log(agent)
             }
         })
-        .catch((error) => { res.status(400).send(error) })
+        .catch((error) => { res.status(400).send(error.message) })
 })
 //------------------------------------------------------
 
@@ -53,22 +53,23 @@ router.get('/agents/:id', (req, res) => {
 router.patch('/agents/:id', async (req, res) => {
     try {
         const _id = req.params.id
+        const updates = Object.keys(req.body)
 
-        const agent = await Agent.findByIdAndUpdate(_id, req.body, {
-            new: true
-        })
+        const agent = await Agent.findById(_id)
             if (!agent) {
                 console.log('ERROR(404)! Agent ID: ' + _id + ' NOT FOUND')
                 res.status(404).send('ERROR(404)! Agent ID: ' + _id + ' NOT FOUND')
             }
-            else {
+
+            updates.forEach((ele)=>(agent[ele] = req.body[ele]))
+
+            await agent.save()
                 res.status(200).send(agent)
                     console.log('Agent ID: ' + _id + ' UPDATED ' , agent)
 
-            }
     }
     catch (error) {
-        res.status(400).send(error)
+        res.status(400).send(error.message)
     }
 })
 //------------------------------------------------------
@@ -89,7 +90,7 @@ router.delete('/agents/:id', async (req, res) => {
             }
     }
     catch (error) {
-        res.status(400).send(error)
+        res.status(400).send(error.message)
     }
 })
 //////////////////////////////////////////////////////////////////////////////////////////////////
